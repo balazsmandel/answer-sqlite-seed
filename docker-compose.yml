@@ -1,0 +1,22 @@
+# Acme Engineering Q&A - Apache Answer, installed with the default SQLite database
+services:
+  answer:
+    image: apache/answer:2.0.3
+    container_name: answer
+    restart: unless-stopped
+    ports:
+      - "9080:80"
+    environment:
+      AUTO_INSTALL: "true"
+      DB_TYPE: sqlite3
+      DB_FILE: /data/answer.db
+      LANGUAGE: en-US
+      SITE_NAME: "Engineering Q&A"
+      SITE_URL: "http://localhost:9080"
+      CONTACT_EMAIL: ops@acme.example
+      ADMIN_NAME: admin
+      ADMIN_PASSWORD: "Adm1n-Pass-2024"
+      ADMIN_EMAIL: admin@acme.example
+      EXTERNAL_CONTENT_DISPLAY: always_display
+    volumes:
+      - ./data:/data
