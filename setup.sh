@@ -10,8 +10,12 @@ cp "$here/docker-compose.yml" "$dest/"
 (cd "$dest" && docker compose up -d)
 echo "waiting for the site..."
 i=0
-until curl -fs http://localhost:9080/answer/api/v1/siteinfo >/dev/null 2>&1; do
-  i=$((i+1)); [ "$i" -gt 90 ] && { echo "the site did not come up"; exit 1; }
+# the site restarts once while it installs itself, so wait until the administrator can log in twice in a row
+ok=0
+until [ "$ok" -ge 2 ]; do
+  if curl -fs -X POST http://localhost:9080/answer/api/v1/user/login/email -H 'Content-Type: application/json' \
+       -d '{"e_mail":"admin@acme.example","pass":"Adm1n-Pass-2024"}' 2>/dev/null | grep -q access_token; then ok=$((ok+1)); else ok=0; fi
+  i=$((i+1)); [ "$i" -gt 120 ] && { echo "the site did not come up"; exit 1; }
   sleep 2
 done
 python3 "$here/seed.py" http://localhost:9080 admin@acme.example 'Adm1n-Pass-2024' "$dest/accounts.json"
